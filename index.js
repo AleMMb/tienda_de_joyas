@@ -10,11 +10,11 @@ app.use(cors())
 
 app.use(express.json())
 
-app.listen(port, (req, res)=>{
+app.listen(port, (req, res) => {
   console.log(`escuchando en el puerto ${port}`)
 })
 
-app.get('/', (req, res)=>{
+app.get('/', (req, res) => {
   res.send('Hola mundo desde ruta raíz.')
 })
 
