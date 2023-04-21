@@ -4,7 +4,7 @@ const reportes = require('../middleware/report.handler')
 const router = express.Router()
 
 
-router.get('/', reportes.reporteConsulta, async (req, res) => {
+router.get('/', reportes.reporteConsultaQUERY, async (req, res) => {
   try {
     const queryStrings = req.query
     const joyas = await joyasService.getJoyas(queryStrings)
@@ -15,7 +15,7 @@ router.get('/', reportes.reporteConsulta, async (req, res) => {
   }
 })
 
-router.get('/filtros', reportes.reporteConsulta, async (req, res) => {
+router.get('/filtros', reportes.reporteConsultaQUERY, async (req, res) => {
   try {
     const queryStrings = req.query
     const joyas = await joyasService.obtenerJoyasFiltro(queryStrings)
@@ -26,7 +26,7 @@ router.get('/filtros', reportes.reporteConsulta, async (req, res) => {
 })
 
 
-router.get('/:id', reportes.reporteConsulta, async (req, res) => {
+router.get('/:id', reportes.reporteConsultaPARAMS, async (req, res) => {
   try {
     await joyasService.getOneJoya(req, res)
   } catch (error) {
