@@ -1,8 +1,9 @@
 const pool = require('../database/conexion')
-const format = require('pg-format');
+const format = require('pg-format')
+const error = require('../middleware/error.handler')
 
 
-const formatHATEOAS = (joyas) => {
+const formatHATEOAS = (joyas) => {  //estructura la respuesta HATEOAS
 
   const results = joyas.map((j) => {
     return {
@@ -28,8 +29,15 @@ const formatHATEOAS = (joyas) => {
 
 
 
-const getJoyas = async ({ limits = 10, page = 1, order_by = 'id_ASC' }) => {
+
+
+const getJoyas = async ({ limits = 10, page = 1, order_by = 'id_ASC' }) => {   // cosulta parametrizada
+  if (limits <= 0 || isNaN(limits))
+    throw error.errorLimite
+
   try {
+    if (limits <= 0 || isNaN(limits))
+      throw error.errorLimite
     const [campo, direccion] = order_by.split('_')
     const offset = (page - 1) * limits
     let formatoConsulta = format('SELECT * FROM inventario ORDER BY %s %s LIMIT %s OFFSET %s;', campo, direccion, limits, offset)
@@ -41,7 +49,26 @@ const getJoyas = async ({ limits = 10, page = 1, order_by = 'id_ASC' }) => {
 }
 
 
-const obtenerJoyasFiltro = async ({ precio_max, precio_min, categoria, metal }) => {
+
+
+
+const obtenerJoyasFiltro = async ({ precio_max, precio_min, categoria, metal }) => {  //consulta capaz de filtrar por queryString
+
+  if (precio_max && isNaN(precio_max)) {
+    throw error.errorPrecio
+  }
+  if (precio_min && isNaN(precio_min)) {
+    throw error.errorPrecio
+  }
+  const categorias = ['aros', 'anillo', 'collar']
+  if (categoria && !categorias.includes(categoria)) {
+    throw error.errorCategoria
+  }
+  const metales = ['oro', 'plata']
+  if (metal && !metales.includes(metal)) {
+    throw error.metalError
+  }
+
   try {
     let filtros = []
     values = []
@@ -52,10 +79,10 @@ const obtenerJoyasFiltro = async ({ precio_max, precio_min, categoria, metal }) 
       filtros.push(`${campo} ${comparador} $${length + 1}`)
     }
 
-    if (precio_max) agregarFiltro('precio', '<=', precio_max)
-    if (precio_min) agregarFiltro('precio', '>=', precio_min)
-    if (categoria) agregarFiltro('categoria', '=', categoria)
-    if (metal) agregarFiltro('metal', '=', metal)
+    if ('$1') agregarFiltro('precio', '<=', precio_max)
+    if ('$2') agregarFiltro('precio', '>=', precio_min)
+    if ('$3') agregarFiltro('categoria', '=', categoria)
+    if ('$4') agregarFiltro('metal', '=', metal)
     let consulta = "SELECT * FROM inventario"
     if (filtros.length > 0) {
       filtros = filtros.join(" AND ")
@@ -73,14 +100,18 @@ const obtenerJoyasFiltro = async ({ precio_max, precio_min, categoria, metal }) 
 
 
 
-const getOneJoya = async (req, res) => {
+const getOneJoya = async (req, res) => {  // consulta para obtener una joya por parametro ID
+
+  const { id } = req.params
+  if (id <= 0 || isNaN(id) || id > 6)
+    throw error.errorID
+
   try {
-    const { id } = req.params
     let consulta = 'SELECT * FROM inventario WHERE id = $1'
     const { rows: joyas } = await pool.query(consulta, [id])
     res.json(joyas)
   } catch (error) {
-    console.log
+    console.log(error)
   }
 }
 

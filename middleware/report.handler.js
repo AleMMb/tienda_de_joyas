@@ -1,6 +1,6 @@
 
 
-const reporteConsulta = async (req, res, next) => {
+const reporteConsulta = (req, res, next) => {
   const parametros = req.query
   const url = req.url
   console.log(`
